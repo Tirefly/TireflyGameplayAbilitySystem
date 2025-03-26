@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Calculator/TireflyAttributeEvaluator.h"
 #include "Engine/DeveloperSettings.h"
 #include "TireflyGameplayAbilitySystemSettings.generated.h"
 
@@ -47,6 +48,10 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Tirefly Gameplay Attribute", Meta = (
 		DisplayName = "属性定义路径", RelativeToGameContentDir, LongPackageName))
 	FDirectoryPath GameplayAttributeDefinitionDirectory;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Tirefly Gameplay Attribute", Meta = (
+		DisplayName = "通用属性求值器"))
+	TSoftObjectPtr<UTireflyAttributeEvaluator> GenericAttributeEvaluator;
 
 #pragma endregion
 };

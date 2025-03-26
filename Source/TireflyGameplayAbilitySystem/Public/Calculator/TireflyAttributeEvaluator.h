@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "TireflyAttributeModifier.h"
 #include "TireflyAttributeEvaluator.generated.h"
 
 
 // 属性求值器
-UCLASS(Abstract, Blueprintable, BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class TIREFLYGAMEPLAYABILITYSYSTEM_API UTireflyAttributeEvaluator : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
@@ -32,8 +33,10 @@ public:
 public:
 	// 计算属性当前值
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Evaluator")
-	float EvaluateCurrentValue(float BaseValue) const;
-	virtual float EvaluateCurrentValue_Implementation(float BaseValue) const { return 0.f; }
+	float EvaluateCurrentValue(float BaseValue,
+		const TMap<int32, FTireflyAttributeModifierInstance>& Modifiers) const;
+	virtual float EvaluateCurrentValue_Implementation(float BaseValue,
+		const TMap<int32, FTireflyAttributeModifierInstance>& Modifiers) const { return 0.f; }
 
 public:
 	// 属性求值器类型

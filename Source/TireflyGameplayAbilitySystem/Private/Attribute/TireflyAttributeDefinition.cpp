@@ -4,10 +4,20 @@
 #include "Attribute/TireflyAttributeDefinition.h"
 
 #include "TireflyGameplayAbilitySystemLibrary.h"
+#include "TireflyGameplayAbilitySystemSettings.h"
 
 
 const FPrimaryAssetType UTireflyAttributeDefinition::TireflyAttributeDefinition = TEXT("Tirefly Attribute Definition");
 
+
+UTireflyAttributeDefinition::UTireflyAttributeDefinition(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	if (const UTireflyGameplayAbilitySystemSettings* Settings = GetDefault<UTireflyGameplayAbilitySystemSettings>())
+	{
+		AttributeEvaluator = Settings->GenericAttributeEvaluator.LoadSynchronous();
+	}
+}
 
 FPrimaryAssetId UTireflyAttributeDefinition::GetPrimaryAssetId() const
 {

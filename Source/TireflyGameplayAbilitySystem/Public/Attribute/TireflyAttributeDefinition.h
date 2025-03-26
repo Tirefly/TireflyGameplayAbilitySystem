@@ -3,51 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TireflyAttributeRange.h"
 #include "Engine/DataAsset.h"
 #include "TireflyAttributeDefinition.generated.h"
 
 
 class UTireflyAttributeEvaluator;
-
-
-// 属性范围
-USTRUCT(BlueprintType)
-struct FTireflyAttributeRange
-{
-	GENERATED_BODY()
-
-public:
-	// 属性最小值是否使用其他属性
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最小值设置（是否使用其他属性）"))
-	bool bMinValueUseAttribute = false;
-
-	// 属性最小值
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最小值",
-		EditCondition = "!bMinValueUseAttribute", EditConditionHides))
-	float MinValue;
-
-	// 属性最小值使用的属性类型
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最小值属性",
-		EditCondition = "bMinValueUseAttribute", EditConditionHides,
-		GetOptions = "GetGameplayAttributeNamesExceptThis"))
-	FName MinValueAttribute;
-
-	// 属性最大值是否使用其他属性
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最大值设置（是否使用其他属性）"))
-	bool bMaxValueUseAttribute = false;
-
-	// 属性最大值
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最大值",
-		EditCondition = "!bMaxValueUseAttribute", EditConditionHides))
-	float MaxValue;
-
-	// 属性最大值使用的属性类型
-	UPROPERTY(EditAnywhere, Meta = (DisplayName = "属性最大值属性",
-		EditCondition = "bMaxValueUseAttribute", EditConditionHides,
-		GetOptions = "GetGameplayAttributeNamesExceptThis"))
-	FName MaxValueAttribute;
-	
-};
 
 
 // 属性定义
@@ -59,6 +20,8 @@ class TIREFLYGAMEPLAYABILITYSYSTEM_API UTireflyAttributeDefinition : public UPri
 #pragma region PrimaryDataAsset
 
 public:
+	UTireflyAttributeDefinition(const FObjectInitializer& ObjectInitializer);
+	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
 public:
@@ -85,6 +48,10 @@ public:
 	UFUNCTION()
 	FName GetGameplayAttributeNameDefine() const { return AttributeNameDefine; }
 
+	// 获取属性范围
+	UFUNCTION()
+	const FTireflyAttributeRange& GetAttributeRange() const { return AttributeRange; }
+
 	// 获取属性求值器
 	UFUNCTION()
 	UTireflyAttributeEvaluator* GetAttributeEvaluator() const;
@@ -100,6 +67,10 @@ public:
 	// 获取是否在UI中显示
 	UFUNCTION()
 	bool IsShowInUI() const { return bShowInUI; }
+
+	// 获取是否作为小数显示
+	UFUNCTION()
+	bool IsAsDecimal() const { return bAsDecimal; }
 
 	// 获取是否以百分比显示
 	UFUNCTION()
@@ -118,7 +89,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Meta", Meta = (DisplayName = "属性计算器"))
 	TObjectPtr<UTireflyAttributeEvaluator> AttributeEvaluator;
 
-	// 属性名称
+	// 属性名称（推荐使用 StringTable）
 	UPROPERTY(EditAnywhere, Category = "Text", Meta = (DisplayName = "属性名称（文本）"))
 	FText AttributeName;
 
@@ -130,8 +101,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category="UI", Meta = (DisplayName = "是否在UI中显示"))
 	bool bShowInUI = true;
 
-	// 是否以百分比显示
-	UPROPERTY(EditAnywhere, Category="UI", Meta = (DisplayName = "是否以百分比显示"))
+	// 是否作为小数显示
+	UPROPERTY(EditAnywhere, Category="UI", Meta = (DisplayName = "是否作为小数显示", EditCondition = "bShowInUI", EditConditionHides))
+	bool bAsDecimal = true;
+
+	// 是否作为百分数显示
+	UPROPERTY(EditAnywhere, Category="UI", Meta = (DisplayName = "是否作为百分数显示", EditCondition = "bShowInUI", EditConditionHides))
 	bool bAsPercentage = false;
 
 #pragma endregion
