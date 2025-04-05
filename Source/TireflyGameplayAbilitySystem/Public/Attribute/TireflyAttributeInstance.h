@@ -17,7 +17,7 @@ struct FTireflyAttributeInstance
 {
 	GENERATED_BODY()
 
-#pragma region Constuctor
+#pragma region Constructor
 	
 public:
 	FTireflyAttributeInstance()
@@ -29,22 +29,9 @@ public:
 	FTireflyAttributeInstance(
 		UTireflyAttributeDefinition* Def,
 		UTireflyGameplayAbilitySystemComponent* InOwner,
-		float InBaseValue)
-	{
-		Definition = Def;
-		Owner = InOwner;
-		
-		SetBaseValue(InBaseValue);
-	}
+		float InBaseValue);
 
-	FTireflyAttributeInstance(const FTireflyAttributeInstance& Another)
-	{
-		Definition = Another.Definition;
-		Owner = Another.Owner;
-		Modifiers = Another.Modifiers;
-		
-		SetBaseValue(Another.BaseValue);
-	}
+	FTireflyAttributeInstance(const FTireflyAttributeInstance& Another);
 
 	FTireflyAttributeInstance& operator=(const FTireflyAttributeInstance& Another)
 	{
@@ -56,7 +43,7 @@ public:
 
 		return *this;
 	}
-
+	
 #pragma endregion
 
 
@@ -92,7 +79,7 @@ public:
 	FText GetShowcaseForUI() const;
 
 	// 获取属性定义
-	const UTireflyAttributeDefinition* GetDefinition() const { return Definition; }
+	const UTireflyAttributeDefinition* GetDefinition() const { return Definition.Get(); }
 
 	// 获取基础值
 	float GetBaseValue() const { return BaseValue; }
@@ -106,6 +93,7 @@ public:
 #pragma region Setter
 
 protected:
+	// 将输入的值限制在属性的有效范围内
 	float ClampAttributeValue(float InValue) const;
 
 public:
@@ -131,7 +119,7 @@ public:
 protected:
 	// 属性定义
 	UPROPERTY()
-	TObjectPtr<UTireflyAttributeDefinition> Definition;
+	TWeakObjectPtr<UTireflyAttributeDefinition> Definition;
 
 	// 属性所属者
 	UPROPERTY()
@@ -140,6 +128,10 @@ protected:
 	// 修改器集合
 	UPROPERTY()
 	TMap<int32, FTireflyAttributeModifierInstance> Modifiers;
+
+	// 属性名称缓存
+	UPROPERTY()
+	FName AttributeName = NAME_None;
 
 	// 基础值
     UPROPERTY()

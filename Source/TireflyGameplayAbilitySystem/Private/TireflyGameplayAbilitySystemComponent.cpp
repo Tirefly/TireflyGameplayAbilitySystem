@@ -62,6 +62,32 @@ void UTireflyGameplayAbilitySystemComponent::RemoveAttribute(UTireflyAttributeDe
 	}
 }
 
+FTireflyAttributeInstance UTireflyGameplayAbilitySystemComponent::GetAttributeInstance(FName AttributeName)
+{
+	for (const auto& AttributeInstance : AttributeInstances)
+	{
+		if (AttributeInstance.GetAttributeName() == AttributeName)
+		{
+			return AttributeInstance;
+		}
+	}
+
+	return FTireflyAttributeInstance();
+}
+
+const UTireflyAttributeDefinition* UTireflyGameplayAbilitySystemComponent::GetAttributeDefinition(FName AttributeName)
+{
+	for (const auto& AttributeInstance : AttributeInstances)
+	{
+		if (AttributeInstance.GetAttributeName() == AttributeName)
+		{
+			return AttributeInstance.GetDefinition();
+		}
+	}
+
+	return nullptr;
+}
+
 bool UTireflyGameplayAbilitySystemComponent::GetAttributeValue(FName AttributeName, float& OutValue) const
 {
 	for (const auto& AttributeInstance : AttributeInstances)

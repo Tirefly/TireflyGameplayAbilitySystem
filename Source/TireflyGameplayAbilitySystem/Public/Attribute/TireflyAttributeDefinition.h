@@ -45,35 +45,35 @@ public:
 
 public:
 	// 获取属性名定义
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	FName GetGameplayAttributeNameDefine() const { return AttributeNameDefine; }
 
 	// 获取属性范围
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	const FTireflyAttributeRange& GetAttributeRange() const { return AttributeRange; }
 
 	// 获取属性求值器
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	UTireflyAttributeEvaluator* GetAttributeEvaluator() const;
 
 	// 获取属性名称
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	FText GetGameplayAttributeName() const { return AttributeDescription; }
 
 	// 获取属性描述
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	FText GetGameplayAttributeDescription() const { return AttributeDescription; }
 
 	// 获取是否在UI中显示
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	bool IsShowInUI() const { return bShowInUI; }
 
 	// 获取是否作为小数显示
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	bool IsAsDecimal() const { return bAsDecimal; }
 
 	// 获取是否以百分比显示
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	bool IsAsPercentage() const { return bAsPercentage; }
 
 protected:

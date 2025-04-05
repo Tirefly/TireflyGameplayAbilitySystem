@@ -9,6 +9,39 @@
 #include "Calculator/TireflyAttributeEvaluator.h"
 
 
+FTireflyAttributeInstance::FTireflyAttributeInstance(UTireflyAttributeDefinition* Def,
+	UTireflyGameplayAbilitySystemComponent* InOwner, float InBaseValue)
+{
+	Definition = Def;
+	Owner = InOwner;
+
+	if (!Definition.IsValid())
+	{
+		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute definition is not set"), *FString(__FUNCTION__));
+		return;
+	}
+	
+	AttributeName = Definition->GetGameplayAttributeNameDefine();
+	SetBaseValue(InBaseValue);
+}
+
+FTireflyAttributeInstance::FTireflyAttributeInstance(const FTireflyAttributeInstance& Another)
+{
+	Definition = Another.Definition;
+	Owner = Another.Owner;
+	Modifiers = Another.Modifiers;
+
+	if (!Definition.IsValid())
+	{
+		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute definition is not set"), *FString(__FUNCTION__));
+		return;
+	}
+	
+	AttributeName = Definition->GetGameplayAttributeNameDefine();
+		
+	SetBaseValue(Another.BaseValue);
+}
+
 bool FTireflyAttributeInstance::IsValid() const
 {
 	return Definition != nullptr && Owner != nullptr;
@@ -16,24 +49,18 @@ bool FTireflyAttributeInstance::IsValid() const
 
 FName FTireflyAttributeInstance::GetAttributeName() const
 {
-	if (!Definition)
-	{
-		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute definition is not set"), *FString(__FUNCTION__));
-		return NAME_None;
-	}
-	
-	return Definition->GetGameplayAttributeNameDefine();
+	return AttributeName;
 }
 
 FString FTireflyAttributeInstance::DebugString() const
 {
 	return FString::Printf(TEXT("Attribute: %s, BaseValue: %f, CurrentValue: %f"),
-		*GetAttributeName().ToString(), BaseValue, CurrentValue);
+		*AttributeName.ToString(), BaseValue, CurrentValue);
 }
 
 FText FTireflyAttributeInstance::GetShowcaseForUI() const
 {
-	if (!Definition)
+	if (!Definition.IsValid())
 	{
 		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute definition is not set"), *FString(__FUNCTION__));
 		return FText::FromString(TEXT("Invalid Attribute"));
@@ -52,7 +79,7 @@ FText FTireflyAttributeInstance::GetShowcaseForUI() const
 
 float FTireflyAttributeInstance::ClampAttributeValue(float InValue) const
 {
-	if (!Definition)
+	if (!Definition.IsValid())
 	{
 		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute 's definition is not set"), *FString(__FUNCTION__));
 		return InValue;
@@ -61,7 +88,7 @@ float FTireflyAttributeInstance::ClampAttributeValue(float InValue) const
 	if (!Owner)
 	{
 		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Owner of {%s} is not set"),
-			*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
+			*FString(__FUNCTION__), *AttributeName.ToString());
 		return InValue;
 	}
 	
@@ -73,68 +100,44 @@ float FTireflyAttributeInstance::ClampAttributeValue(float InValue) const
 		return InValue;
 	}
 
-	float MinValue = InValue;
-	float MaxValue = InValue;
-    
-	// Handle MinValue
-	if (Range.bHasMinValue)
+	// Lambda函数用于处理最小值和最大值的获取
+	auto GetBoundValue = [&, this](
+		bool bHasBound,
+		bool bUseAttribute,
+		const FName& BoundAttribute,
+		float InBoundValue,
+		float DefaultValue)
 	{
-		if (Range.bMinValueUseAttribute)
+		if (!bHasBound)
 		{
-			if (!Range.MinValueAttribute.IsValid())
-			{
-				UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] MinValueAttribute of {%s} is invalid, using default value"),
-					*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
-				MinValue = static_cast<float>(INT_MIN);
-			}
-			else
-			{
-				if (!Owner->GetAttributeValue(Range.MinValueAttribute, MinValue))
-				{
-					UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] Failed to get MinValueAttribute of {%s}, using default value"),
-						*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
-					MinValue = static_cast<float>(INT_MIN);
-				 }
-			}
+			return InValue;
 		}
-		else
-		{
-			MinValue = Range.MinValue;
-		}
-	}
 
-	// Handle MaxValue
-	if (Range.bHasMaxValue)
-	{
-		if (Range.bMaxValueUseAttribute)
+		if (bUseAttribute)
 		{
-			if (!Range.MaxValueAttribute.IsValid())
+			float BoundValue;
+			if (!Owner->GetAttributeValue(BoundAttribute, BoundValue))
 			{
-				UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] MaxValueAttribute of {%s} is invalid, using default value"),
-					*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
-				MaxValue = static_cast<float>(INT_MAX);
+				UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] Failed to get BoundAttribute of {%s}, using default value"),
+					*FString(__FUNCTION__), *AttributeName.ToString());
+				return DefaultValue;
 			}
-			else
-			{
-				if (!Owner->GetAttributeValue(Range.MaxValueAttribute, MaxValue))
-				{
-					UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] Failed to get MaxValueAttribute of {%s}, using default value"),
-						*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
-					MaxValue = static_cast<float>(INT_MAX);
-				}
-			}
+			return BoundValue;
 		}
 		else
 		{
-			MaxValue = Range.MaxValue;
+			return InBoundValue;
 		}
-	}
+	};
+
+	float MinValue = GetBoundValue(Range.bHasMinValue, Range.bMinValueUseAttribute, Range.MinValueAttribute, Range.MinValue, -FLT_MIN);
+	float MaxValue = GetBoundValue(Range.bHasMaxValue, Range.bMaxValueUseAttribute, Range.MaxValueAttribute, Range.MaxValue, FLT_MAX);
 
 	// Ensure MinValue <= MaxValue
 	if (MinValue > MaxValue)
 	{
 		UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] {%s} MinValue (%f) is greater than MaxValue (%f), clamping to MaxValue"),
-			*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString(), MinValue, MaxValue);
+			*FString(__FUNCTION__), *AttributeName.ToString(), MinValue, MaxValue);
 		MinValue = MaxValue;
 	}
 
@@ -178,7 +181,7 @@ void FTireflyAttributeInstance::RemoveModifier(int32 ModifierHandle)
 
 void FTireflyAttributeInstance::SetBaseValue(float NewBaseValue)
 {
-	if (!Definition)
+	if (!Definition.IsValid())
 	{
 		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Attribute definition is not set"), *FString(__FUNCTION__));
 		return;
@@ -187,7 +190,7 @@ void FTireflyAttributeInstance::SetBaseValue(float NewBaseValue)
 	if (!Owner)
 	{
 		UE_LOG(LogTireflyAttribute, Error, TEXT("[%s] Owner of {%s} is not set"),
-			*FString(__FUNCTION__), *Definition->GetGameplayAttributeName().ToString());
+			*FString(__FUNCTION__), *AttributeName.ToString());
 		return;
 	}
 	

@@ -29,36 +29,36 @@ float UTireflyGenericAttributeEvaluator::EvaluateCurrentValue_Implementation(flo
 	float DivideMods = 0.f;
 	FTireflyAttributeModifierInstance NewestOverrideMod;
 	
-	for (const TPair<int32, FTireflyAttributeModifierInstance>& Modifier : Modifiers)
+	for (auto&& [Handle, Modifier] : Modifiers)
 	{
-		if (!Modifier.Value.IsValid())
+		if (!Modifier.IsValid())
 		{
 			UE_LOG(LogTireflyAttribute, Warning, TEXT("[%s] Invalid modifier {%s} instance found."),
-				*FString(__FUNCTION__), *Modifier.Value.DebugString());
+				*FString(__FUNCTION__), *Modifier.DebugString());
 			continue;
 		}
 		
-		if (Modifier.Value.ModifierType == TireflyGenericAttrModType::ModType_Add)
+		if (Modifier.ModifierType == TireflyGenericAttrModType::ModType_Add)
 		{
-			AddMods += Modifier.Value.Magnitude;
+			AddMods += Modifier.Magnitude;
 		}
-		else if (Modifier.Value.ModifierType == TireflyGenericAttrModType::ModType_MultiplyAdditive)
+		else if (Modifier.ModifierType == TireflyGenericAttrModType::ModType_MultiplyAdditive)
 		{
-			MultiAdditiveMods *= Modifier.Value.Magnitude;
+			MultiAdditiveMods *= Modifier.Magnitude;
 		}
-		else if (Modifier.Value.ModifierType == TireflyGenericAttrModType::ModType_MultiplyCompound)
+		else if (Modifier.ModifierType == TireflyGenericAttrModType::ModType_MultiplyCompound)
 		{
-			MultiCompoundMods *= Modifier.Value.Magnitude;
+			MultiCompoundMods *= Modifier.Magnitude;
 		}
-		else if (Modifier.Value.ModifierType == TireflyGenericAttrModType::ModType_Divide)
+		else if (Modifier.ModifierType == TireflyGenericAttrModType::ModType_Divide)
 		{
-			DivideMods += Modifier.Value.Magnitude;
+			DivideMods += Modifier.Magnitude;
 		}
-		else if (Modifier.Value.ModifierType == TireflyGenericAttrModType::ModType_Override)
+		else if (Modifier.ModifierType == TireflyGenericAttrModType::ModType_Override)
 		{
-			if (Modifier.Value.Timestamp > NewestOverrideMod.Timestamp)
+			if (Modifier.Timestamp > NewestOverrideMod.Timestamp)
 			{
-				NewestOverrideMod = Modifier.Value;
+				NewestOverrideMod = Modifier;
 			}
 		}
 	}

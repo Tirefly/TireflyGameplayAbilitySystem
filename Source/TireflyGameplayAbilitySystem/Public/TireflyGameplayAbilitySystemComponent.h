@@ -40,6 +40,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Tirefly Gameplay Attribute")
 	void RemoveAttribute(UTireflyAttributeDefinition* Definition);
 
+	// 获取属性实例（基于名称）
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
+	FTireflyAttributeInstance GetAttributeInstance(
+		UPARAM(Meta = (GetParamOptions = "TireflyGameplayAbilitySystemLibrary.GetAllGameplayAttributeNames"))FName AttributeName);
+
+	// 获取属性定义（基于名称）
+	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
+	const UTireflyAttributeDefinition* GetAttributeDefinition(
+		UPARAM(Meta = (GetParamOptions = "TireflyGameplayAbilitySystemLibrary.GetAllGameplayAttributeNames"))FName AttributeName);
+
 	// 获取属性值（基于名称）
 	UFUNCTION(BlueprintCallable, Category = "Tirefly Gameplay Attribute")
 	bool GetAttributeValue(
@@ -53,11 +63,11 @@ public:
 		float& OutBaseValue) const;
 
 	// 处理属性值改变
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Tirefly Gameplay Attribute")
+	UFUNCTION()
 	void HandleAttributeValueChanged(const FTireflyAttributeInstance& Attribute) {}
 
 	// 处理属性基础值改变
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Tirefly Gameplay Attribute")
+	UFUNCTION()
 	void HandleAttributeBaseValueChanged(const FTireflyAttributeInstance& Attribute) {}
 
 protected:
